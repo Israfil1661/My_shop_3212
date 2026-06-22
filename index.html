@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Nirman Accounts | Golden Ratio UI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ===== গোল্ডেন রেশিও ভেরিয়েবল ===== */
+        :root {
+            --golden: 1.618;
+            --base-font: 16px;
+            --h1-size: calc(var(--base-font) * 1.618); /* 26px */
+            --h2-size: calc(var(--base-font) * 1.2);   /* 19px */
+            --h3-size: calc(var(--base-font) * 1.0);   /* 16px */
+            --body-size: calc(var(--base-font) * 0.875); /* 14px */
+            --small-size: calc(var(--base-font) * 0.75); /* 12px */
+            
+            --radius-lg: calc(32px * 1.618); /* 52px */
+            --radius-md: calc(28px * 1.2);   /* 34px */
+            --radius-sm: calc(16px * 1.0);   /* 16px */
+            
+            --padding-lg: calc(18px * 1.2);  /* 22px */
+            --padding-md: calc(14px * 1.1);  /* 15px */
+            --padding-sm: calc(10px * 1.0);  /* 10px */
+            
+            --max-width: 460px;  /* Golden ratio অনুযায়ী */
+            
+            --bg-body: #e0e5ec;
+            --bg-card: #e0e5ec;
+            --text-color: #1f3a5f;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --input-bg: #e0e5ec;
+            --badge-bg: #e0e5ec;
+            --border-color: #d1d9e8;
+            --card-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            --inset-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            --nav-bg: #e0e5ec;
+            --preview-bg: #eef2f7;
+            --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        [data-theme="dark"] {
+            --bg-body: #1a1a2e;
+            --bg-card: #16213e;
+            --text-color: #e0e5ec;
+            --shadow-light: #2a2a4a;
+            --shadow-dark: #0a0a1a;
+            --input-bg: #1a1a2e;
+            --badge-bg: #2a2a4a;
+            --border-color: #3a3a5e;
+            --card-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            --inset-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            --nav-bg: #16213e;
+            --preview-bg: #1a1a2e;
+        }
+
+        /* ===== গ্লোবাল স্টাইল ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { 
+            background: var(--bg-body); 
+            color: var(--text-color); 
+            padding: var(--padding-md) var(--padding-sm) 80px var(--padding-sm);
+            max-width: var(--max-width);
+            margin: 0 auto;
+            transition: background var(--transition), color var(--transition);
+            min-height: 100vh;
+            font-size: var(--body-size);
+            line-height: var(--golden);
+        }
+        .card, button, .bottom-nav { 
+            background: var(--bg-card); 
+            border-radius: var(--radius-md); 
+            box-shadow: var(--card-shadow); 
+            transition: background var(--transition), box-shadow var(--transition), color var(--transition), transform 0.1s;
+            color: var(--text-color);
+            border: none;
+        }
+        .card { padding: var(--padding-lg); margin-bottom: calc(var(--padding-lg) * 0.8); }
+        input, select, textarea { 
+            width: 100%; 
+            padding: calc(var(--padding-md) * 1.1) var(--padding-md); 
+            margin: calc(var(--padding-sm) * 0.6) 0 calc(var(--padding-md) * 0.8) 0;
+            border-radius: var(--radius-sm); 
+            background: var(--input-bg); 
+            box-shadow: var(--inset-shadow); 
+            border: none; 
+            font-size: calc(var(--body-size) * 1.05);
+            color: var(--text-color);
+            transition: background var(--transition), box-shadow var(--transition), color var(--transition);
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+        input::placeholder, select::placeholder { color: var(--text-color); opacity: 0.5; }
+        button { 
+            padding: calc(var(--padding-md) * 1.0) calc(var(--padding-lg) * 0.9);
+            border-radius: calc(var(--radius-lg) * 0.7);
+            font-weight: 600;
+            cursor: pointer; 
+            box-shadow: var(--card-shadow); 
+            transition: all 0.08s linear, background var(--transition), box-shadow var(--transition), color var(--transition);
+            color: var(--text-color);
+            background: var(--bg-card);
+            font-size: calc(var(--body-size) * 0.95);
+            letter-spacing: 0.02em;
+            border: none;
+        }
+        button:active { transform: scale(0.96); box-shadow: var(--inset-shadow); }
+        .btn-primary { width: 100%; text-align: center; padding: calc(var(--padding-md) * 1.2); }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; gap: calc(var(--padding-sm) * 1.2); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--padding-sm) * 1.4); }
+        .badge { 
+            background: var(--badge-bg); 
+            border-radius: calc(var(--radius-sm) * 2.5); 
+            padding: calc(var(--padding-sm) * 0.4) calc(var(--padding-sm) * 1.2); 
+            font-size: var(--small-size); 
+            box-shadow: inset 1px 1px 2px var(--shadow-light), inset -1px -1px 2px var(--shadow-dark);
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        .badge-inactive { background: #d1d9e8; color: #5a6a7e; }
+        .bottom-nav { 
+            position: fixed; 
+            bottom: calc(var(--padding-sm) * 0.8); 
+            left: var(--padding-sm); 
+            right: var(--padding-sm); 
+            display: flex; 
+            justify-content: space-around; 
+            padding: calc(var(--padding-sm) * 0.6) var(--padding-sm); 
+            z-index: 1000; 
+            background: var(--nav-bg);
+            max-width: calc(var(--max-width) - var(--padding-sm) * 2);
+            margin: 0 auto;
+            border-radius: calc(var(--radius-lg) * 0.9);
+        }
+        .nav-item { 
+            text-align: center; 
+            font-size: var(--small-size); 
+            padding: calc(var(--padding-sm) * 0.6) 0; 
+            flex: 1; 
+            border-radius: calc(var(--radius-sm) * 2.5); 
+            font-weight: 600; 
+            color: var(--text-color);
+            transition: background var(--transition), box-shadow var(--transition);
+            letter-spacing: 0.01em;
+        }
+        .nav-item.active { 
+            background: var(--bg-card); 
+            box-shadow: var(--inset-shadow); 
+        }
+        .page { display: none; animation: fade 0.25s ease; }
+        .active-page { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* ===== জার্নাল লাইন ===== */
+        .journal-line { 
+            background: var(--bg-card); 
+            border-radius: var(--radius-sm); 
+            padding: var(--padding-md); 
+            margin-bottom: calc(var(--padding-md) * 1.2); 
+            box-shadow: var(--inset-shadow); 
+        }
+        .remove-line { background: transparent; box-shadow: none; padding: calc(var(--padding-sm) * 0.4); font-size: calc(var(--h2-size) * 0.9); }
+        
+        /* ===== টাইপোগ্রাফি ===== */
+        h2 { 
+            font-size: var(--h2-size); 
+            margin-bottom: calc(var(--padding-md) * 0.9); 
+            color: var(--text-color);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        h3 { font-size: var(--h3-size); font-weight: 600; margin-bottom: calc(var(--padding-sm) * 0.8); }
+        h4 { font-size: calc(var(--h3-size) * 0.9); font-weight: 600; margin: var(--padding-sm) 0; }
+        .text-small { font-size: var(--small-size); color: var(--text-color); opacity: 0.75; }
+        .label-hint { font-size: calc(var(--body-size) * 0.9); font-weight: 500; margin-bottom: calc(var(--padding-sm) * 0.4); color: var(--text-color); }
+        .report-title { font-size: calc(var(--h2-size) * 1.1); font-weight: 700; margin-bottom: calc(var(--padding-sm) * 0.8); color: var(--text-color); letter-spacing: -0.02em; }
+        .report-subtitle { font-size: var(--body-size); color: var(--text-color); opacity: 0.7; margin-bottom: calc(var(--padding-md) * 0.8); }
+
+        /* ===== টেবিল স্ক্রল ===== */
+        .table-wrapper { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            margin: calc(var(--padding-sm) * 0.8) 0; 
+            padding-bottom: calc(var(--padding-sm) * 0.4);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            box-shadow: var(--inset-shadow);
+            padding: var(--padding-sm);
+        }
+        .table-wrapper table { 
+            min-width: 580px; 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: calc(var(--body-size) * 0.95);
+        }
+        .table-wrapper.small-table table { min-width: 320px; }
+        
+        .ledger-table th { 
+            text-align: left; 
+            padding: calc(var(--padding-sm) * 0.6) calc(var(--padding-sm) * 0.8); 
+            border-bottom: 2px solid var(--border-color); 
+            background: var(--preview-bg); 
+            color: var(--text-color);
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .ledger-table td { 
+            padding: calc(var(--padding-sm) * 0.5) calc(var(--padding-sm) * 0.8); 
+            border-bottom: 1px solid var(--border-color); 
+            color: var(--text-color);
+            white-space: nowrap;
+        }
+        .ledger-table .bal-dr { color: #1e7e34; font-weight: 500; }
+        .ledger-table .bal-cr { color: #b33; font-weight: 500; }
+        .ledger-table .total-row { font-weight: 700; border-top: 2px solid var(--border-color); }
+        .account-inactive { opacity: 0.6; background: var(--preview-bg); }
+        
+        .preview-box { 
+            background: var(--preview-bg); 
+            padding: var(--padding-md); 
+            border-radius: var(--radius-sm); 
+            text-align: center; 
+            font-size: calc(var(--body-size) * 1.05);
+            box-shadow: var(--inset-shadow);
+            color: var(--text-color);
+        }
+        
+        /* ===== টগল সুইচ ===== */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: #2196F3; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        
+        .color-picker-group { display: flex; gap: var(--padding-sm); align-items: center; flex-wrap: wrap; margin-bottom: calc(var(--padding-sm) * 0.8); }
+        .color-picker-group label { font-weight: 500; min-width: 100px; color: var(--text-color); font-size: var(--body-size); }
+        .color-picker-group input[type="color"] { width: 48px; height: 48px; padding: 0; border: none; border-radius: 50%; cursor: pointer; background: transparent; box-shadow: var(--card-shadow); }
+        .voucher-card { padding: var(--padding-md); margin-bottom: calc(var(--padding-md) * 0.9); }
+        .voucher-card .flex-between { margin-bottom: calc(var(--padding-sm) * 0.6); }
+
+        /* ===== রেসপনসিভ ===== */
+        @media (max-width: 480px) {
+            :root {
+                --max-width: 100%;
+                --padding-lg: 16px;
+                --padding-md: 12px;
+                --padding-sm: 8px;
+            }
+            body { padding: 12px 8px 72px 8px; }
+            .bottom-nav { padding: 4px 6px; }
+            .nav-item { font-size: 10px; padding: 4px 0; }
+            .grid-2 { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <!-- Home -->
+    <div id="homePage" class="page active-page">
+        <div class="flex-between"><h2 id="dashboardTitle">Dashboard <span style="font-size:14px;">ড্যাশবোর্ড</span></h2><i class="fas fa-store" style="font-size: var(--h2-size);"></i></div>
+        <div id="dashboardCards" class="card"></div>
+        <div class="card"><div class="flex-between"><strong>Recent Transactions</strong></div><div id="recentEntries"></div></div>
+    </div>
+    <!-- Accounts -->
+    <div id="accountsPage" class="page">
+        <div class="flex-between"><h2>Accounts</h2><button id="showAddAccountForm" style="width:auto; padding:8px 22px;">+ New</button></div>
+        <div id="accountFormContainer" style="display:none;" class="card"></div>
+        <div class="search-box"><input type="text" id="accountSearch" placeholder="Search by name / code"></div>
+        <div id="accountsList"></div>
+    </div>
+    <!-- Journal Entry -->
+    <div id="journalPage" class="page">
+        <h2>Journal Entry</h2>
+        <div id="journalForm" class="card"></div>
+    </div>
+    <!-- Voucher List -->
+    <div id="voucherPage" class="page">
+        <h2>📋 All Vouchers</h2>
+        <div id="voucherList" class="card"></div>
+    </div>
+    <!-- Reports -->
+    <div id="reportsPage" class="page">
+        <h2>Reports</h2>
+        <div class="grid-2">
+            <button id="showTrialBalance">Trial Balance</button><button id="showLedger">Ledger</button>
+            <button id="showIncomeStmt">Income Statement</button><button id="showBalanceSheet">Balance Sheet</button>
+            <button id="showCashFlow">Cash Flow</button><button id="showAdjustingEntries">Adjusting Entries</button>
+        </div>
+        <div id="reportOutput" class="card"></div>
+    </div>
+    <!-- Analytics -->
+    <div id="analyticsPage" class="page">
+        <h2>Analytics</h2>
+        <div class="card">
+            <div class="flex-between"><span>From / To</span><input type="date" id="analyticsStart"><input type="date" id="analyticsEnd"></div>
+            <select id="graphMetric"><option value="Cash">Cash</option><option value="Profit">Net Profit</option><option value="Expenses">Expenses</option><option value="Sales">Revenue</option><option value="NetWorth">Net Worth</option></select>
+            <div class="grid-2" style="margin-top:8px"><button id="quickToday">Today</button><button id="quickWeek">This Week</button><button id="quickMonth">This Month</button><button id="quickYear">This Year</button></div>
+            <canvas id="analyticsChart" height="200" style="margin-top:20px"></canvas>
+        </div>
+    </div>
+    <!-- Settings -->
+    <div id="settingsPage" class="page">
+        <h2>Settings</h2>
+        <div class="card">
+            <div style="margin-bottom: var(--padding-md);">
+                <label for="businessNameInput" style="font-weight: 500; display: block; margin-bottom: 6px;">Business Name</label>
+                <input type="text" id="businessNameInput" placeholder="e.g. My Shop" value="">
+                <div style="font-size:var(--small-size); color:var(--text-color); opacity:0.7; margin-top:4px;">💡 This name is also used as default owner (if single owner)</div>
+            </div>
+            <button id="ownershipSettingsBtn" class="btn-primary">Ownership & Shares</button>
+            <button id="backupExportBtn" class="btn-primary">📁 Export Excel Backup</button>
+            <button id="restoreBackupBtn" class="btn-primary">📂 Restore from Excel</button>
+            <button id="closingEntriesBtn" class="btn-primary">🔒 Month/Year Closing</button>
+            <button id="resetSystemBtn" class="btn-primary" style="background:#d1d9e8;">⚠️ Reset System</button>
+        </div>
+        <div class="card">
+            <h3>🎨 Theme Settings</h3>
+            <div class="flex-between" style="margin-bottom:var(--padding-md);">
+                <span style="font-weight:500;">🌓 Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div style="border-top:1px solid var(--border-color); padding-top:var(--padding-md); margin-top:6px;">
+                <h4>☀️ Day Mode Colors</h4>
+                <div class="color-picker-group">
+                    <label>Background</label>
+                    <input type="color" id="dayBg" value="#e0e5ec">
+                    <label>Text</label>
+                    <input type="color" id="dayText" value="#1f3a5f">
+                </div>
+                <h4 style="margin-top:10px;">🌙 Night Mode Colors</h4>
+                <div class="color-picker-group">
+                    <label>Background</label>
+                    <input type="color" id="nightBg" value="#1a1a2e">
+                    <label>Text</label>
+                    <input type="color" id="nightText" value="#e0e5ec">
+                </div>
+                <button id="saveThemeBtn" class="btn-primary" style="margin-top:var(--padding-md);">💾 Save Theme Settings</button>
+            </div>
+        </div>
+        <div id="ownershipPanel"></div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item" data-page="homePage">🏠 Home</div>
+        <div class="nav-item" data-page="accountsPage">📒 Acc</div>
+        <div class="nav-item" data-page="journalPage">📝 Jnl</div>
+        <div class="nav-item" data-page="voucherPage">📋 Vch</div>
+        <div class="nav-item" data-page="reportsPage">📊 Rpt</div>
+        <div class="nav-item" data-page="analyticsPage">📈 Grp</div>
+        <div class="nav-item" data-page="settingsPage">⚙️ Set</div>
+    </div>
+</div>
+
+<script>
+    // ========== DATA LAYER ==========
+    let accounts = [];
+    let journalEntries = [];
+    let ownershipHistory = [];
+    let currentOwners = [];
+    let nextId = { account: 1, journal: 1 };
+    let settings = { businessName: "My Shop", currency: "৳", fiscalYearStart: "2024-01-01" };
+
+    // ========== থিম সেটিংস ==========
+    let themeSettings = {
+        mode: 'day',
+        day: { bg: '#e0e5ec', text: '#1f3a5f' },
+        night: { bg: '#1a1a2e', text: '#e0e5ec' }
+    };
+
+    function loadTheme() {
+        let saved = localStorage.getItem('nirman_theme');
+        if (saved) {
+            try { themeSettings = JSON.parse(saved); } catch(e) {}
+        }
+        applyTheme();
+        document.getElementById('dayBg').value = themeSettings.day.bg;
+        document.getElementById('dayText').value = themeSettings.day.text;
+        document.getElementById('nightBg').value = themeSettings.night.bg;
+        document.getElementById('nightText').value = themeSettings.night.text;
+        document.getElementById('darkModeToggle').checked = (themeSettings.mode === 'night');
+    }
+    function saveTheme() { localStorage.setItem('nirman_theme', JSON.stringify(themeSettings)); }
+    function applyTheme() {
+        const root = document.documentElement;
+        const mode = themeSettings.mode;
+        const colors = themeSettings[mode];
+        root.style.setProperty('--bg-body', colors.bg);
+        root.style.setProperty('--bg-card', colors.bg);
+        root.style.setProperty('--text-color', colors.text);
+        root.style.setProperty('--input-bg', colors.bg);
+        root.style.setProperty('--badge-bg', colors.bg);
+        root.style.setProperty('--nav-bg', colors.bg);
+        root.style.setProperty('--preview-bg', mode === 'day' ? '#eef2f7' : '#1a1a2e');
+        root.style.setProperty('--shadow-light', mode === 'day' ? '#ffffff' : '#2a2a4a');
+        root.style.setProperty('--shadow-dark', mode === 'day' ? '#a3b1c6' : '#0a0a1a');
+        updateDashboardTitle();
+    }
+
+    // ========== সেভ/লোড ==========
+    function saveToLocal() { localStorage.setItem("acc_app_data", JSON.stringify({accounts, journalEntries, ownershipHistory, currentOwners, nextId, settings})); }
+    function loadFromLocal() {
+        let d = localStorage.getItem("acc_app_data");
+        if(d) {
+            let data = JSON.parse(d);
+            accounts = data.accounts || [];
+            journalEntries = data.journalEntries || [];
+            ownershipHistory = data.ownershipHistory || [];
+            currentOwners = data.currentOwners || [];
+            nextId = data.nextId || { account: 1, journal: 1 };
+            settings = data.settings || { businessName: "My Shop", currency: "৳", fiscalYearStart: "2024-01-01" };
+        } else { initDemoData(); }
+        document.getElementById('businessNameInput').value = settings.businessName || 'My Shop';
+        if (currentOwners.length === 0) currentOwners = [{ name: settings.businessName, percentage: 100 }];
+        ensureCapitalAccount(settings.businessName);
+        saveToLocal();
+        loadTheme();
+    }
+    function ensureCapitalAccount(ownerName) {
+        let cap = accounts.find(a => a.category === "Equity" && a.name.includes("Capital - "));
+        if (!cap) {
+            let newCap = { id: nextId.account++, name: `Capital - ${ownerName}`, code: `CAP-${ownerName.substring(0,3).toUpperCase()}`, category: "Equity", status: "Active" };
+            accounts.push(newCap);
+        } else {
+            let expectedName = `Capital - ${ownerName}`;
+            if (cap.name !== expectedName) {
+                cap.name = expectedName;
+                cap.code = `CAP-${ownerName.substring(0,3).toUpperCase()}`;
+            }
+        }
+        saveToLocal();
+    }
+    function initDemoData() {
+        let defaultName = "My Shop";
+        settings.businessName = defaultName;
+        accounts = [
+            { id: 1, name: "Cash", code: "CASH", category: "Assets", status: "Active" },
+            { id: 2, name: `Capital - ${defaultName}`, code: "CAP-MYS", category: "Equity", status: "Active" },
+            { id: 3, name: "Sales Revenue", code: "REV", category: "Revenue", status: "Active" },
+            { id: 4, name: "Rent Expense", code: "EXP-RENT", category: "Expenses", status: "Active" },
+            { id: 5, name: "Accounts Receivable", code: "AR", category: "Assets", status: "Active" },
+            { id: 6, name: "Accounts Payable", code: "AP", category: "Liabilities", status: "Active" }
+        ];
+        journalEntries = [{
+            id: 1, date: "2025-01-01", description: "Initial Capital", voucher: "JV-0001", type: "normal",
+            lines: [{ accountId: 1, debit: 50000, credit: 0 }, { accountId: 2, debit: 0, credit: 50000 }]
+        }];
+        nextId = { account: 7, journal: 2 };
+        currentOwners = [{ name: defaultName, percentage: 100 }];
+        ownershipHistory = [{ date: "2025-01-01", ownerName: defaultName, percentage: 100, transactionRef: "JV-0001" }];
+        saveToLocal();
+    }
+
+    // ========== HELPERS ==========
+    function getAccountBalance(accountId, upToDate = null) {
+        let balance = 0;
+        for(let e of journalEntries) {
+            if(upToDate && e.date > upToDate) continue;
+            for(let l of e.lines) if(l.accountId === accountId) balance += (l.debit||0) - (l.credit||0);
+        }
+        let acc = accounts.find(a=>a.id===accountId);
+        if(acc && (acc.category === "Liabilities" || acc.category === "Equity" || acc.category === "Revenue")) balance = -balance;
+        return balance;
+    }
+    function getAccountName(id) { return accounts.find(a=>a.id===id)?.name || "?"; }
+    function getTrialBalance(asOfDate=null) {
+        let tb = [];
+        for(let acc of accounts) {
+            let bal = getAccountBalance(acc.id, asOfDate);
+            if(Math.abs(bal) > 0.01) tb.push({account: acc.name, debit: bal>0?bal:0, credit: bal<0?-bal:0});
+        }
+        return tb;
+    }
+    function getIncomeStatement(startDate, endDate) {
+        let revenue=0, expense=0;
+        for(let e of journalEntries) {
+            if(e.date < startDate || e.date > endDate) continue;
+            for(let l of e.lines) {
+                let acc = accounts.find(a=>a.id===l.accountId);
+                if(!acc) continue;
+                let amount = (l.debit||0) - (l.credit||0);
+                if(acc.category === "Revenue") revenue += amount;
+                if(acc.category === "Expenses") expense += amount;
+            }
+        }
+        return { revenue, expense, netProfit: revenue - expense };
+    }
+    function getBalanceSheet(asOfDate) {
+        let assets=0, liabilities=0, equity=0;
+        for(let acc of accounts) {
+            let bal = getAccountBalance(acc.id, asOfDate);
+            if(acc.category === "Assets") assets += bal;
+            else if(acc.category === "Liabilities") liabilities += bal;
+            else if(acc.category === "Equity") equity += bal;
+        }
+        return { assets, liabilities, equity, netWorth: assets - liabilities };
+    }
+    function getCashFlow(startDate, endDate) {
+        let cashAcc = accounts.find(a=>a.code==="CASH" || a.name.toLowerCase()==="cash");
+        if(!cashAcc) return { netChange:0, beginning:0, ending:0 };
+        let inflow=0, outflow=0;
+        for(let e of journalEntries) {
+            if(e.date < startDate || e.date > endDate) continue;
+            for(let l of e.lines) if(l.accountId === cashAcc.id) { inflow += l.debit; outflow += l.credit; }
+        }
+        let beforeBalance = getAccountBalance(cashAcc.id, addDays(startDate, -1));
+        let netChange = inflow - outflow;
+        return { netChange, beginning: beforeBalance, ending: beforeBalance + netChange };
+    }
+    function addDays(dateStr, days) { let d=new Date(dateStr); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+
+    // ========== OWNERSHIP ==========
+    function updateOwnership(seller, buyer, percent, date) {
+        let sellerObj = currentOwners.find(o=>o.name===seller);
+        if(!sellerObj) { alert("❌ Seller not found."); return false; }
+        if(sellerObj.percentage < percent) { alert("❌ Not enough shares."); return false; }
+        let netWorth = getBalanceSheet(date).netWorth;
+        let transferValue = netWorth * (percent/100);
+        let sellerCap = accounts.find(a=>a.name.includes(seller) && a.category==="Equity");
+        if(!sellerCap) { sellerCap = { id: nextId.account++, name: `Capital - ${seller}`, code: `CAP-${seller.substring(0,3).toUpperCase()}`, category: "Equity", status: "Active" }; accounts.push(sellerCap); }
+        let buyerCap = accounts.find(a=>a.name.includes(buyer) && a.category==="Equity");
+        if(!buyerCap) { buyerCap = { id: nextId.account++, name: `Capital - ${buyer}`, code: `CAP-${buyer.substring(0,3).toUpperCase()}`, category: "Equity", status: "Active" }; accounts.push(buyerCap); }
+        let jv = { id: nextId.journal++, date, description: `Ownership transfer ${percent}% from ${seller} to ${buyer}`, voucher: `JV-${String(nextId.journal).padStart(4,'0')}`, type: "normal", lines: [ { accountId: sellerCap.id, debit: 0, credit: transferValue }, { accountId: buyerCap.id, debit: transferValue, credit: 0 } ] };
+        journalEntries.push(jv);
+        sellerObj.percentage -= percent;
+        let buyerObj = currentOwners.find(o=>o.name===buyer);
+        if(buyerObj) buyerObj.percentage += percent;
+        else currentOwners.push({ name: buyer, percentage: percent });
+        ownershipHistory.push({ date, ownerName: seller, percentage: sellerObj.percentage, transactionRef: jv.voucher }, { date, ownerName: buyer, percentage: buyerObj ? buyerObj.percentage : percent, transactionRef: jv.voucher });
+        saveToLocal();
+        return true;
+    }
+
+    function performClosing(endDate) {
+        let { netProfit } = getIncomeStatement("1900-01-01", endDate);
+        if(Math.abs(netProfit) < 0.01) return;
+        let incSum = accounts.find(a=>a.name==="Income Summary");
+        if(!incSum){ incSum = { id: nextId.account++, name:"Income Summary", code:"INCS", category:"Equity", status:"Active" }; accounts.push(incSum); }
+        let lines = [];
+        for(let acc of accounts){
+            let bal = getAccountBalance(acc.id, endDate);
+            if(acc.category === "Revenue" && bal !== 0) lines.push({accountId:acc.id, debit:0, credit:bal});
+            if(acc.category === "Expenses" && bal !== 0) lines.push({accountId:acc.id, debit:bal, credit:0});
+        }
+        if(netProfit>0) lines.push({accountId:incSum.id, debit:netProfit, credit:0});
+        else lines.push({accountId:incSum.id, debit:0, credit:-netProfit});
+        for(let owner of currentOwners){
+            let share = netProfit * (owner.percentage/100);
+            if(Math.abs(share)<0.01) continue;
+            let capAcc = accounts.find(a=>a.name.includes(owner.name.split(" ")[0]) && a.category==="Equity");
+            if(!capAcc){ capAcc = { id: nextId.account++, name:`Capital - ${owner.name}`, code:`CAP-${owner.name.substring(0,3)}`, category:"Equity", status:"Active" }; accounts.push(capAcc); }
+            if(netProfit>0) lines.push({accountId:incSum.id, debit:0, credit:share}, {accountId:capAcc.id, debit:share, credit:0});
+            else lines.push({accountId:incSum.id, debit:-share, credit:0}, {accountId:capAcc.id, debit:0, credit:-share});
+        }
+        let closingJv = { id: nextId.journal++, date: endDate, description: "Closing Entries", voucher: `JV-CL${nextId.journal}`, type:"adjusting", lines };
+        journalEntries.push(closingJv);
+        saveToLocal();
+    }
+
+    function deleteJournalEntry(entryId) {
+        if (confirm("⚠️ Delete this entry permanently?")) {
+            const index = journalEntries.findIndex(e => e.id === entryId);
+            if (index !== -1) {
+                journalEntries.splice(index, 1);
+                saveToLocal();
+                renderAll();
+                renderVoucherList();
+                alert("✅ Deleted.");
+            }
+        }
+    }
+
+    function updateDashboardTitle() {
+        const titleEl = document.getElementById('dashboardTitle');
+        if (titleEl) {
+            const name = settings.businessName || 'Dashboard';
+            titleEl.innerHTML = `${name} <span style="font-size:14px;">ড্যাশবোর্ড</span>`;
+        }
+    }
+
+    // ========== জার্নাল ফর্ম ==========
+    function renderJournalForm() {
+        const formContainer = document.getElementById("journalForm");
+        let linesData = [{ accountId: accounts[0]?.id || null, debit: 0, credit: 0 }];
+        function getActiveAccounts() { return accounts.filter(a => a.status === "Active"); }
+        function renderLine(idx, line) {
+            const activeAccs = getActiveAccounts();
+            const optionsHtml = activeAccs.map(acc => `<option value="${acc.id}" ${line.accountId === acc.id ? 'selected' : ''}>${acc.name} (${acc.code || '-'})</option>`).join('');
+            return `<div class="journal-line" data-line-idx="${idx}">
+                <div class="flex-between" style="margin-bottom:6px">
+                    <label>Account</label>
+                    <button type="button" class="remove-line" data-idx="${idx}"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <div>
+                    <input type="text" class="account-filter-input" data-idx="${idx}" placeholder="🔍 Search..." style="margin-bottom:6px;">
+                    <select class="account-select" data-idx="${idx}" style="margin-top:4px; height: 48px; font-size: 16px;">${optionsHtml}</select>
+                </div>
+                <div class="flex-between" style="gap:12px; margin-top:12px">
+                    <div style="flex:1"><div class="label-hint">📥 Debit</div><input type="number" placeholder="0.00" class="debit-input" data-idx="${idx}" value="${line.debit || 0}" step="any" style="margin-top:4px;"></div>
+                    <div style="flex:1"><div class="label-hint">📤 Credit</div><input type="number" placeholder="0.00" class="credit-input" data-idx="${idx}" value="${line.credit || 0}" step="any" style="margin-top:4px;"></div>
+                </div>
+            </div>`;
+        }
+        function refreshLinesUI() {
+            const linesDiv = document.getElementById("journalLinesContainer");
+            if (!linesDiv) return;
+            linesDiv.innerHTML = linesData.map((line, idx) => renderLine(idx, line)).join('');
+            linesData.forEach((_, idx) => {
+                const filterInput = document.querySelector(`.account-filter-input[data-idx="${idx}"]`);
+                const selectEl = document.querySelector(`.account-select[data-idx="${idx}"]`);
+                if (!filterInput || !selectEl) return;
+                const updateFilter = () => {
+                    const searchTerm = filterInput.value.toLowerCase();
+                    const options = Array.from(selectEl.options);
+                    options.forEach(opt => {
+                        const acc = accounts.find(a => a.id == opt.value);
+                        if (acc) { const text = `${acc.name} ${acc.code}`.toLowerCase(); opt.style.display = text.includes(searchTerm) ? '' : 'none'; }
+                    });
+                    if (selectEl.selectedOptions[0] && selectEl.selectedOptions[0].style.display === 'none') selectEl.value = '';
+                };
+                filterInput.addEventListener('input', updateFilter);
+                filterInput.addEventListener('change', updateFilter);
+                selectEl.addEventListener('change', () => { linesData[idx].accountId = parseInt(selectEl.value); });
+                updateFilter();
+            });
+            document.querySelectorAll(".debit-input").forEach(inp => inp.addEventListener('input', (e) => { let idx = parseInt(e.target.dataset.idx); linesData[idx].debit = parseFloat(e.target.value) || 0; }));
+            document.querySelectorAll(".credit-input").forEach(inp => inp.addEventListener('input', (e) => { let idx = parseInt(e.target.dataset.idx); linesData[idx].credit = parseFloat(e.target.value) || 0; }));
+            document.querySelectorAll(".remove-line").forEach(btn => btn.addEventListener('click', (e) => { let idx = parseInt(e.target.dataset.idx); linesData.splice(idx,1); refreshLinesUI(); }));
+        }
+        formContainer.innerHTML = `
+            <div><label>Date</label><input type="date" id="jvDate" value="${new Date().toISOString().slice(0,10)}"></div>
+            <div><label>Description</label><input type="text" id="jvDesc" placeholder="e.g., Sold goods"></div>
+            <div><label>Accounting Lines</label><div id="journalLinesContainer"></div></div>
+            <div class="flex-between" style="margin-top:12px">
+                <button id="addLineBtn" type="button"><i class="fas fa-plus"></i> Add line</button>
+                <button id="saveJvBtn" class="btn-primary" style="width:auto;">💾 Save</button>
+            </div>
+        `;
+        refreshLinesUI();
+        document.getElementById("addLineBtn").onclick = () => { linesData.push({ accountId: accounts[0]?.id || null, debit: 0, credit: 0 }); refreshLinesUI(); };
+        document.getElementById("saveJvBtn").onclick = () => {
+            let totalDebit = linesData.reduce((s,l)=>s+(l.debit||0),0);
+            let totalCredit = linesData.reduce((s,l)=>s+(l.credit||0),0);
+            if (Math.abs(totalDebit - totalCredit) > 0.01) { alert("❌ Debit and Credit must be equal!"); return; }
+            if (linesData.some(l => !l.accountId)) { alert("Please select an account for each line."); return; }
+            let newEntry = { id: nextId.journal++, date: document.getElementById("jvDate").value, description: document.getElementById("jvDesc").value, voucher: `JV-${String(nextId.journal).padStart(4,'0')}`, type: "normal", lines: linesData.map(l => ({ accountId: l.accountId, debit: l.debit||0, credit: l.credit||0 })) };
+            journalEntries.push(newEntry);
+            saveToLocal();
+            renderAll();
+            renderJournalForm();
+            alert("✅ Saved! Voucher: " + newEntry.voucher);
+        };
+    }
+
+    // ========== ভাউচার লিস্ট ==========
+    function renderVoucherList() {
+        const container = document.getElementById("voucherList");
+        if (!container) return;
+        if (journalEntries.length === 0) {
+            container.innerHTML = `<p>No vouchers.</p>`;
+            return;
+        }
+        let html = '';
+        let sorted = [...journalEntries].reverse();
+        sorted.forEach(j => {
+            html += `
+                <div class="voucher-card card">
+                    <div class="flex-between">
+                        <strong>${j.voucher}</strong>
+                        <span class="badge">${j.date}</span>
+                    </div>
+                    <div>${j.description}</div>
+                    <div class="text-small">Lines: ${j.lines.length}</div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button class="viewLinesBtn" data-id="${j.id}" style="flex:1;">📋 View Lines</button>
+                        <button class="deleteVoucherBtn" data-id="${j.id}" style="flex:1; background:#f8d7da;">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        container.querySelectorAll(".viewLinesBtn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                let entry = journalEntries.find(e => e.id == parseInt(btn.dataset.id));
+                if(entry) {
+                    let details = entry.lines.map(l => `${getAccountName(l.accountId)} : Debit ${l.debit}  Credit ${l.credit}`).join("\n");
+                    alert(`Voucher: ${entry.voucher}\n${entry.description}\n\n${details}`);
+                }
+            });
+        });
+        container.querySelectorAll(".deleteVoucherBtn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                let id = parseInt(btn.dataset.id);
+                deleteJournalEntry(id);
+            });
+        });
+    }
+
+    // ========== RENDER DASHBOARD ==========
+    function renderDashboard() {
+        let bs = getBalanceSheet(new Date().toISOString().slice(0,10));
+        let cashAcc = accounts.find(a=>a.code==="CASH"||a.name.toLowerCase()==="cash");
+        let cashBal = cashAcc ? getAccountBalance(cashAcc.id) : 0;
+        let netProfit = getIncomeStatement("1900-01-01", new Date().toISOString().slice(0,10)).netProfit;
+        document.getElementById("dashboardCards").innerHTML = `<div class="grid-2"><div class="card"><span>Cash</span><br><strong>${settings.currency} ${cashBal.toFixed(2)}</strong></div><div class="card"><span>Total Assets</span><br><strong>${settings.currency} ${bs.assets.toFixed(2)}</strong></div><div class="card"><span>Liabilities</span><br><strong>${settings.currency} ${bs.liabilities.toFixed(2)}</strong></div><div class="card"><span>Net Profit</span><br><strong>${settings.currency} ${netProfit.toFixed(2)}</strong></div><div class="card"><span>Owner Capital</span><br><strong>${settings.currency} ${bs.equity.toFixed(2)}</strong></div><div class="card"><span>Business Value</span><br><strong>${settings.currency} ${bs.netWorth.toFixed(2)}</strong></div></div>`;
+        let recent = [...journalEntries].reverse().slice(0,5);
+        document.getElementById("recentEntries").innerHTML = recent.map(j=>`<div class="entry-line">${j.date} ${j.description} (${j.voucher})</div>`).join("");
+        updateDashboardTitle();
+    }
+
+    // ========== ACCOUNTS ==========
+    function renderAccountsList() {
+        let search = document.getElementById("accountSearch")?.value.toLowerCase()||"";
+        let filtered = accounts.filter(a=> a.name.toLowerCase().includes(search) || (a.code||"").toLowerCase().includes(search));
+        document.getElementById("accountsList").innerHTML = filtered.map(acc => {
+            const isInactive = acc.status === "Inactive";
+            const cardClass = isInactive ? "card account-inactive" : "card";
+            const statusBadge = isInactive ? `<span class="badge badge-inactive">⛔ Inactive</span>` : `<span class="badge">✅ Active</span>`;
+            return `<div class="${cardClass}">
+                <div class="flex-between">
+                    <span><strong>${acc.name} (${acc.code||'-'})</strong> ${statusBadge}</span>
+                    <div>
+                        <button class="editAccountBtn" data-id="${acc.id}">✏️</button>
+                        <button class="toggleStatusBtn" data-id="${acc.id}" style="background:${isInactive ? '#d4edda' : '#f8d7da'}">
+                            ${isInactive ? '🔄 Activate' : '⏸️ Inactivate'}
+                        </button>
+                    </div>
+                </div>
+                <div style="font-size:var(--small-size); color:var(--text-color); opacity:0.8;">Category: ${acc.category}</div>
+            </div>`;
+        }).join("");
+        document.querySelectorAll(".editAccountBtn").forEach(btn=> btn.addEventListener("click",(e)=>editAccountForm(parseInt(btn.dataset.id))));
+        document.querySelectorAll(".toggleStatusBtn").forEach(btn=> btn.addEventListener("click",(e)=>{
+            let acc = accounts.find(a=>a.id == parseInt(btn.dataset.id));
+            if(acc) { acc.status = acc.status === "Active" ? "Inactive" : "Active"; saveToLocal(); renderAccountsList(); }
+        }));
+    }
+    function editAccountForm(id){ 
+        let acc = accounts.find(a=>a.id===id); 
+        if(!acc) return; 
+        document.getElementById("accountFormContainer").innerHTML = `
+            <input id="editName" value="${acc.name}" placeholder="Name">
+            <input id="editCode" value="${acc.code}" placeholder="Code">
+            <select id="editCat">${["Assets","Liabilities","Equity","Revenue","Expenses"].map(c=>`<option ${acc.category===c?"selected":""}>${c}</option>`)}</select>
+            <select id="editStatus"><option value="Active" ${acc.status==="Active"?"selected":""}>Active</option><option value="Inactive" ${acc.status==="Inactive"?"selected":""}>Inactive</option></select>
+            <button id="saveEdit">💾 Update Account</button>
+        `; 
+        document.getElementById("saveEdit").onclick=()=>{ 
+            acc.name = document.getElementById("editName").value; 
+            acc.code = document.getElementById("editCode").value; 
+            acc.category = document.getElementById("editCat").value; 
+            acc.status = document.getElementById("editStatus").value; 
+            saveToLocal(); 
+            renderAccountsList(); 
+            document.getElementById("accountFormContainer").style.display="none";
+        }; 
+        document.getElementById("accountFormContainer").style.display="block"; 
+    }
+
+    // ========== OWNERSHIP PANEL ==========
+    function renderOwnershipPanel(){
+        let today = new Date().toISOString().slice(0,10);
+        let currentNetWorth = getBalanceSheet(today).netWorth;
+        let html = `<div class="card">
+            <h3>👥 Ownership & Shares</h3>
+            <div style="background:var(--preview-bg); padding:var(--padding-md); border-radius:var(--radius-sm); margin-bottom:var(--padding-md); box-shadow:var(--inset-shadow);">
+                <strong>📊 Net Worth:</strong> <span style="font-size:var(--h3-size);">${settings.currency} ${currentNetWorth.toFixed(2)}</span>
+                <span style="font-size:var(--small-size); display:block; opacity:0.7;">(as of ${today})</span>
+                <span style="font-size:var(--small-size); display:block; opacity:0.7;">💡 New owner's Capital auto-created.</span>
+            </div>
+            <h4>Current Owners</h4>
+            ${currentOwners.map(o => `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-color);">
+                <span>${o.name}</span> <span><strong>${o.percentage}%</strong> (value: ${settings.currency} ${(currentNetWorth * o.percentage / 100).toFixed(2)})</span>
+            </div>`).join("")}
+            <hr style="margin:var(--padding-sm) 0; border-color:var(--border-color);">
+            <div style="display:grid; gap:8px;">
+                <input id="sellerName" placeholder="Seller Name" value="${currentOwners[0]?.name || ''}">
+                <input id="buyerName" placeholder="Buyer Name">
+                <input id="percentSell" type="number" placeholder="Percent %" step="0.01">
+                <input id="sellDate" type="date" value="${today}">
+                <div id="transferPreview" class="preview-box">⚡ Enter percent to see value</div>
+                <button id="executeTransfer" class="btn-primary">🔄 Transfer Shares</button>
+            </div>
+            <div style="margin-top:var(--padding-md);">
+                <h4>📜 History (last 5)</h4>
+                ${ownershipHistory.slice(-5).reverse().map(h => `<div style="font-size:var(--small-size); padding:4px 0; border-bottom:1px dashed var(--border-color);">${h.date} - ${h.ownerName} : ${h.percentage}% (${h.transactionRef || ''})</div>`).join("")}
+            </div>
+        </div>`;
+        document.getElementById("ownershipPanel").innerHTML = html;
+        const percentInput = document.getElementById("percentSell");
+        const previewDiv = document.getElementById("transferPreview");
+        const dateInput = document.getElementById("sellDate");
+        function updatePreview() {
+            let percent = parseFloat(percentInput.value) || 0;
+            let date = dateInput.value || today;
+            let netWorth = getBalanceSheet(date).netWorth;
+            let value = netWorth * (percent / 100);
+            if (percent > 0) {
+                previewDiv.innerHTML = `<strong>📌 ${percent}% = ${settings.currency} ${value.toFixed(2)}</strong><span style="display:block; font-size:var(--small-size); opacity:0.7;">(based on Net Worth ${settings.currency} ${netWorth.toFixed(2)} on ${date})</span>`;
+            } else {
+                previewDiv.innerHTML = `⚡ Enter percent to see value`;
+            }
+        }
+        percentInput.addEventListener('input', updatePreview);
+        dateInput.addEventListener('change', updatePreview);
+        document.getElementById("executeTransfer")?.addEventListener("click", function() {
+            let seller = document.getElementById("sellerName").value.trim();
+            let buyer = document.getElementById("buyerName").value.trim();
+            let percent = parseFloat(document.getElementById("percentSell").value);
+            let date = document.getElementById("sellDate").value;
+            if (!seller || !buyer || !percent || percent <= 0) { alert("⚠️ Please fill all fields."); return; }
+            let netWorth = getBalanceSheet(date).netWorth;
+            let transferValue = netWorth * (percent / 100);
+            if (confirm(`Confirm transfer?\nSeller: ${seller}\nBuyer: ${buyer}\nPercent: ${percent}%\nAmount: ${settings.currency} ${transferValue.toFixed(2)}`)) {
+                if(updateOwnership(seller, buyer, percent, date)) { 
+                    alert("✅ Transfer successful!"); 
+                    renderAll(); 
+                    renderOwnershipPanel(); 
+                }
+            }
+        });
+    }
+
+    function renderAll(){ 
+        renderDashboard(); 
+        renderAccountsList(); 
+        renderJournalForm(); 
+        renderVoucherList(); 
+        renderOwnershipPanel(); 
+    }
+
+    // ========== NAVIGATION ==========
+    function switchPage(pageId){ 
+        document.querySelectorAll(".page").forEach(p=>p.classList.remove("active-page")); 
+        document.getElementById(pageId).classList.add("active-page"); 
+        renderAll(); 
+        if(pageId==="reportsPage") document.getElementById("reportOutput").innerHTML="Select a report above"; 
+    }
+    document.querySelectorAll(".nav-item").forEach(nav=>nav.addEventListener("click",()=>switchPage(nav.dataset.page)));
+
+    // ========== ACCOUNT CREATE ==========
+    document.getElementById("showAddAccountForm").onclick=()=>{ 
+        document.getElementById("accountFormContainer").innerHTML = `
+            <input id="newAccName" placeholder="Name">
+            <input id="newAccCode" placeholder="Code">
+            <select id="newCat">${["Assets","Liabilities","Equity","Revenue","Expenses"].map(c=>`<option>${c}</option>`)}</select>
+            <select id="newStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+            <button id="createAccountBtn">Create</button>
+        `; 
+        document.getElementById("createAccountBtn").onclick=()=>{
+            let newAcc={id:nextId.account++, name:document.getElementById("newAccName").value, code:document.getElementById("newAccCode").value, category:document.getElementById("newCat").value, status:document.getElementById("newStatus").value}; 
+            accounts.push(newAcc); 
+            saveToLocal(); 
+            renderAccountsList(); 
+            document.getElementById("accountFormContainer").style.display="none";
+        }; 
+        document.getElementById("accountFormContainer").style.display="block"; 
+    };
+
+    // ============================================================
+    // ========== রিপোর্ট – সব জায়গায় স্ক্রল সহ ==========
+    // ============================================================
+
+    // ---------- 1. TRIAL BALANCE ----------
+    document.getElementById("showTrialBalance").onclick = () => {
+        let tb = getTrialBalance();
+        let totalDebit=0, totalCredit=0;
+        let html = `<div class="report-title">📋 Trial Balance</div>
+                    <div class="table-wrapper small-table">
+                    <table class="ledger-table">
+                        <thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead>
+                        <tbody>`;
+        tb.forEach(t => {
+            html += `<tr><td>${t.account}</td><td>${t.debit.toFixed(2)}</td><td>${t.credit.toFixed(2)}</td></tr>`;
+            totalDebit += t.debit;
+            totalCredit += t.credit;
+        });
+        html += `<tr class="total-row"><td><strong>Total</strong></td><td><strong>${totalDebit.toFixed(2)}</strong></td><td><strong>${totalCredit.toFixed(2)}</strong></td></tr>
+                </tbody></table></div>`;
+        if (tb.length === 0) html += "<p>No balances found.</p>";
+        document.getElementById("reportOutput").innerHTML = html;
+    };
+
+    // ---------- 2. LEDGER ----------
+    document.getElementById("showLedger").onclick = () => {
+        let sel = `<label>Select Account</label><select id="ledgerAcc">${accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join("")}</select>
+                   <button id="viewLedger" style="margin-top:8px;">View</button>
+                   <div id="ledgerResult" style="margin-top:12px;"></div>`;
+        document.getElementById("reportOutput").innerHTML = sel;
+        document.getElementById("viewLedger").onclick = () => {
+            let id = parseInt(document.getElementById("ledgerAcc").value);
+            let accName = getAccountName(id);
+            let entries = journalEntries.flatMap(e => e.lines.filter(l => l.accountId === id).map(l => ({date: e.date, desc: e.description, voucher: e.voucher, debit: l.debit||0, credit: l.credit||0})));
+            entries.sort((a,b) => a.date.localeCompare(b.date));
+            if (entries.length === 0) { document.getElementById("ledgerResult").innerHTML = `<p>No transactions.</p>`; return; }
+            let runningBalance = 0;
+            let html = `<div class="report-title">📒 Ledger: ${accName}</div>
+                        <div class="table-wrapper">
+                        <table class="ledger-table">
+                            <thead><tr><th>Date</th><th>Description</th><th>Voucher</th><th>Debit</th><th>Credit</th><th>Balance</th></tr></thead>
+                            <tbody>`;
+            entries.forEach(e => {
+                runningBalance += (e.debit - e.credit);
+                let balText = runningBalance > 0 ? `${runningBalance.toFixed(2)} Dr` : (runningBalance < 0 ? `${(-runningBalance).toFixed(2)} Cr` : '0.00');
+                let balClass = runningBalance > 0 ? 'bal-dr' : (runningBalance < 0 ? 'bal-cr' : '');
+                html += `<tr><td>${e.date}</td><td>${e.desc}</td><td>${e.voucher}</td><td>${e.debit > 0 ? e.debit.toFixed(2) : '-'}</td><td>${e.credit > 0 ? e.credit.toFixed(2) : '-'}</td><td class="${balClass}">${balText}</td></tr>`;
+            });
+            let finalBalance = runningBalance;
+            let finalText = finalBalance > 0 ? `Dr ${finalBalance.toFixed(2)}` : (finalBalance < 0 ? `Cr ${(-finalBalance).toFixed(2)}` : '0.00');
+            html += `<tr class="total-row"><td colspan="5"><strong>Closing Balance</strong></td><td class="${finalBalance > 0 ? 'bal-dr' : (finalBalance < 0 ? 'bal-cr' : '')}"><strong>${finalText}</strong></td></tr>
+                    </tbody></table></div>`;
+            document.getElementById("ledgerResult").innerHTML = html;
+        };
+    };
+
+    // ---------- 3. INCOME STATEMENT ----------
+    document.getElementById("showIncomeStmt").onclick = () => {
+        let end = new Date().toISOString().slice(0,10);
+        let { revenue, expense, netProfit } = getIncomeStatement("2024-01-01", end);
+        let html = `<div class="report-title">📊 Income Statement</div>
+                    <div class="report-subtitle">${settings.businessName} — ${end}</div>
+                    <div class="table-wrapper small-table">
+                    <table class="ledger-table">
+                        <thead><tr><th>Particulars</th><th>Amount</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Revenue</strong></td><td>${revenue.toFixed(2)}</td></tr>
+                            <tr><td><strong>Expenses</strong></td><td>${expense.toFixed(2)}</td></tr>
+                            <tr class="total-row"><td><strong>Net Profit/Loss</strong></td><td><strong>${netProfit >= 0 ? netProfit.toFixed(2) : '('+(-netProfit).toFixed(2)+')'}</strong></td></tr>
+                        </tbody>
+                    </table></div>`;
+        document.getElementById("reportOutput").innerHTML = html;
+    };
+
+    // ---------- 4. BALANCE SHEET ----------
+    document.getElementById("showBalanceSheet").onclick = () => {
+        let asOf = new Date().toISOString().slice(0,10);
+        let bs = getBalanceSheet(asOf);
+        let html = `<div class="report-title">📋 Balance Sheet</div>
+                    <div class="report-subtitle">${settings.businessName} — ${asOf}</div>
+                    <div class="table-wrapper small-table">
+                    <table class="ledger-table">
+                        <thead><tr><th>Head</th><th>Amount</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Assets</strong></td><td>${bs.assets.toFixed(2)}</td></tr>
+                            <tr><td><strong>Liabilities</strong></td><td>${bs.liabilities.toFixed(2)}</td></tr>
+                            <tr><td><strong>Equity</strong></td><td>${bs.equity.toFixed(2)}</td></tr>
+                            <tr class="total-row"><td><strong>Net Worth</strong></td><td><strong>${bs.netWorth.toFixed(2)}</strong></td></tr>
+                        </tbody>
+                    </table></div>`;
+        document.getElementById("reportOutput").innerHTML = html;
+    };
+
+    // ---------- 5. CASH FLOW ----------
+    document.getElementById("showCashFlow").onclick = () => {
+        let start = "2024-01-01", end = new Date().toISOString().slice(0,10);
+        let cf = getCashFlow(start, end);
+        let html = `<div class="report-title">💰 Cash Flow</div>
+                    <div class="report-subtitle">${start} — ${end}</div>
+                    <div class="table-wrapper small-table">
+                    <table class="ledger-table">
+                        <thead><tr><th>Particulars</th><th>Amount</th></tr></thead>
+                        <tbody>
+                            <tr><td>Beginning Cash</td><td>${cf.beginning.toFixed(2)}</td></tr>
+                            <tr><td>Inflow</td><td>${(cf.netChange > 0 ? cf.netChange : 0).toFixed(2)}</td></tr>
+                            <tr><td>Outflow</td><td>${(cf.netChange < 0 ? -cf.netChange : 0).toFixed(2)}</td></tr>
+                            <tr><td><strong>Net Change</strong></td><td><strong>${cf.netChange.toFixed(2)}</strong></td></tr>
+                            <tr class="total-row"><td><strong>Ending Cash</strong></td><td><strong>${cf.ending.toFixed(2)}</strong></td></tr>
+                        </tbody>
+                    </table></div>`;
+        document.getElementById("reportOutput").innerHTML = html;
+    };
+
+    // ---------- 6. ADJUSTING ENTRIES ----------
+    document.getElementById("showAdjustingEntries").onclick = () => {
+        let adj = journalEntries.filter(e => e.type === "adjusting");
+        let html = `<div class="report-title">🔧 Adjusting Entries</div>`;
+        if (adj.length === 0) {
+            html += `<p>No adjusting entries.</p>`;
+        } else {
+            html += `<div class="table-wrapper">
+                        <table class="ledger-table">
+                            <thead><tr><th>Date</th><th>Description</th><th>Voucher</th><th>Account</th><th>Debit</th><th>Credit</th></tr></thead>
+                            <tbody>`;
+            adj.forEach(e => {
+                e.lines.forEach(l => {
+                    html += `<tr><td>${e.date}</td><td>${e.description}</td><td>${e.voucher}</td><td>${getAccountName(l.accountId)}</td><td>${l.debit > 0 ? l.debit.toFixed(2) : '-'}</td><td>${l.credit > 0 ? l.credit.toFixed(2) : '-'}</td></tr>`;
+                });
+            });
+            html += `</tbody></table></div>`;
+        }
+        document.getElementById("reportOutput").innerHTML = html;
+    };
+
+    // ========== SETTINGS BUTTONS ==========
+    document.getElementById("closingEntriesBtn").onclick=()=>{performClosing(new Date().toISOString().slice(0,10)); alert("Closing completed"); renderAll();};
+    document.getElementById("backupExportBtn").onclick=()=>{let data={accounts,journalEntries,ownershipHistory,currentOwners,nextId,settings}; let ws=XLSX.utils.json_to_sheet([{backup:JSON.stringify(data)}]); let wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Backup"); XLSX.writeFile(wb,"accounting_backup.xlsx");};
+    document.getElementById("restoreBackupBtn").onclick=()=>{let input=document.createElement("input"); input.type="file"; input.onchange=e=>{let file=e.target.files[0]; let reader=new FileReader(); reader.onload=ev=>{let data=new Uint8Array(ev.target.result); let workbook=XLSX.read(data,{type:"array"}); let sheet=workbook.Sheets[workbook.SheetNames[0]]; let rows=XLSX.utils.sheet_to_json(sheet); if(rows[0]?.backup){ let restored=JSON.parse(rows[0].backup); accounts=restored.accounts; journalEntries=restored.journalEntries; ownershipHistory=restored.ownershipHistory; currentOwners=restored.currentOwners; nextId=restored.nextId; settings=restored.settings; saveToLocal(); alert("Restored"); location.reload();}}; reader.readAsArrayBuffer(file);}; input.click();};
+    document.getElementById("resetSystemBtn").onclick=()=>{if(confirm("⚠️ WARNING: Reset all transactions? Backup first.")){localStorage.clear(); initDemoData(); location.reload();}};
+
+    // ========== BUSINESS NAME ==========
+    document.getElementById('businessNameInput').addEventListener('input', function() {
+        let newName = this.value.trim();
+        if (newName === '') newName = 'My Shop';
+        if (currentOwners.length === 1 && currentOwners[0].percentage === 100) {
+            let oldOwnerName = currentOwners[0].name;
+            if (oldOwnerName !== newName) {
+                currentOwners[0].name = newName;
+                let capAcc = accounts.find(a => a.category === "Equity" && a.name.includes("Capital - "));
+                if (capAcc) { capAcc.name = `Capital - ${newName}`; capAcc.code = `CAP-${newName.substring(0,3).toUpperCase()}`; } 
+                else { let newCap = { id: nextId.account++, name: `Capital - ${newName}`, code: `CAP-${newName.substring(0,3).toUpperCase()}`, category: "Equity", status: "Active" }; accounts.push(newCap); }
+                ownershipHistory.forEach(h => { if (h.ownerName === oldOwnerName) h.ownerName = newName; });
+                saveToLocal(); renderAll();
+            }
+        }
+        settings.businessName = newName;
+        saveToLocal();
+        updateDashboardTitle();
+    });
+
+    // ========== থিম ==========
+    document.getElementById('darkModeToggle').addEventListener('change', function() {
+        themeSettings.mode = this.checked ? 'night' : 'day';
+        saveTheme(); applyTheme(); renderAll();
+    });
+    document.getElementById('saveThemeBtn').addEventListener('click', function() {
+        themeSettings.day.bg = document.getElementById('dayBg').value;
+        themeSettings.day.text = document.getElementById('dayText').value;
+        themeSettings.night.bg = document.getElementById('nightBg').value;
+        themeSettings.night.text = document.getElementById('nightText').value;
+        saveTheme(); applyTheme(); alert('✅ Theme saved!'); renderAll();
+    });
+
+    // ========== ANALYTICS CHART ==========
+    let chart;
+    function updateChart(){
+        let start=document.getElementById("analyticsStart").value||"2024-01-01", end=document.getElementById("analyticsEnd").value||new Date().toISOString().slice(0,10);
+        let metric=document.getElementById("graphMetric").value;
+        let dataPoints=[], labels=[];
+        let d=new Date(start), endDate=new Date(end);
+        while(d<=endDate){
+            let cur=d.toISOString().slice(0,10);
+            if(metric==="Cash"){ let cash=accounts.find(a=>a.code==="CASH"); dataPoints.push(cash?getAccountBalance(cash.id,cur):0);}
+            else if(metric==="Profit") dataPoints.push(getIncomeStatement(start,cur).netProfit);
+            else if(metric==="Expenses") dataPoints.push(getIncomeStatement(start,cur).expense);
+            else if(metric==="Sales") dataPoints.push(getIncomeStatement(start,cur).revenue);
+            else if(metric==="NetWorth") dataPoints.push(getBalanceSheet(cur).netWorth);
+            labels.push(cur.slice(5));
+            d.setDate(d.getDate()+7);
+        }
+        if(chart) chart.destroy();
+        let ctx=document.getElementById("analyticsChart").getContext("2d");
+        chart=new Chart(ctx,{type:"line",data:{labels,datasets:[{label:metric,data:dataPoints,borderColor:"#2c3e66",tension:0.2}]}});
+    }
+    document.getElementById("graphMetric")?.addEventListener("change",updateChart);
+    document.getElementById("analyticsStart")?.addEventListener("change",updateChart);
+    document.getElementById("analyticsEnd")?.addEventListener("change",updateChart);
+    document.getElementById("quickToday")?.addEventListener("click",()=>{let t=new Date().toISOString().slice(0,10); document.getElementById("analyticsStart").value=t; document.getElementById("analyticsEnd").value=t; updateChart();});
+    document.getElementById("quickWeek")?.addEventListener("click",()=>{let e=new Date(); let s=new Date(); s.setDate(e.getDate()-7); document.getElementById("analyticsStart").value=s.toISOString().slice(0,10); document.getElementById("analyticsEnd").value=e.toISOString().slice(0,10); updateChart();});
+    document.getElementById("quickMonth")?.addEventListener("click",()=>{let e=new Date(); let s=new Date(); s.setMonth(e.getMonth()-1); document.getElementById("analyticsStart").value=s.toISOString().slice(0,10); document.getElementById("analyticsEnd").value=e.toISOString().slice(0,10); updateChart();});
+    document.getElementById("quickYear")?.addEventListener("click",()=>{let e=new Date(); let s=new Date(); s.setFullYear(e.getFullYear()-1); document.getElementById("analyticsStart").value=s.toISOString().slice(0,10); document.getElementById("analyticsEnd").value=e.toISOString().slice(0,10); updateChart();});
+
+    // ========== INIT ==========
+    loadFromLocal(); 
+    renderAll(); 
+    updateChart();
+</script>
+</body>
+</html>
